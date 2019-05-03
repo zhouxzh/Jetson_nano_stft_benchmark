@@ -12,8 +12,8 @@ import timeit
 
 import numpy as np
 
-def rfft_builder(*args, **kwargs):
-    return np.fft.rfft
+from pyfftw.builders import rfft as rfft_builder
+
 
 from testfile import make_test_signal
 

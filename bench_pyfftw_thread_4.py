@@ -12,8 +12,8 @@ import timeit
 
 import numpy as np
 
-def rfft_builder(*args, **kwargs):
-    return np.fft.rfft
+from pyfftw.builders import rfft as rfft_builder
+
 
 from testfile import make_test_signal
 
@@ -34,13 +34,13 @@ def spectrogram(samples, sample_rate=22050, frame_len=1024, fps=70, batch=50):
     num_frames = max(0, (len(samples) - frame_len) // hopsize + 1)
     batch = min(batch, num_frames)
     if batch <= 1 or not samples.flags.c_contiguous:
-        rfft = rfft_builder(samples[:frame_len], n=frame_len)
+        rfft = rfft_builder(samples[:frame_len], n=frame_len, threads=4)
         spect = np.vstack(np.abs(rfft(samples[pos:pos + frame_len] * win))
                           for pos in range(0, len(samples) - frame_len + 1,
                                            int(hopsize)))
     else:
         rfft = rfft_builder(np.empty((batch, frame_len), samples.dtype),
-                            n=frame_len, threads=1)
+                            n=frame_len, threads=4)
         frames = np.lib.stride_tricks.as_strided(
                 samples, shape=(num_frames, frame_len),
                 strides=(samples.strides[0] * hopsize, samples.strides[0]))
